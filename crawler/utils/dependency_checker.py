@@ -14,9 +14,9 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from clients.vector_client import VectorClient
-from utils.azure_utils import check_azure_connection
 from monitoring.health_check import get_health_check
 from monitoring.app_insights import get_app_insights
+from .azure_utils import check_azure_connection
 
 async def check_dependencies() -> bool:
     """

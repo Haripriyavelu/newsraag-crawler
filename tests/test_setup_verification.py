@@ -27,10 +27,11 @@ class TestSetupVerification:
     def test_imports_work(self):
         """Test that project imports are working."""
         try:
-            # Try importing some core modules
-            from crawler.core import source_crawler
+            # Try importing current architecture modules
+            from crawler.factories import SourceFactory
+            from crawler.interfaces import INewsSource, SourceType
             from monitoring import metrics
-            from clients import qdrant_client
+            from monitoring.duplicate_detector import get_duplicate_detector
             
             assert True  # If we get here, imports work
         except ImportError as e:
@@ -88,8 +89,11 @@ class TestProjectSpecificSetup:
     def test_can_import_crawler_modules(self):
         """Test that we can import crawler modules."""
         try:
-            from crawler.core.source_crawler import crawl_source
-            from crawler.core.rss_crawler import discover_articles  # This might not exist yet
+            # Test current architecture imports
+            from crawler.factories import SourceFactory, load_sources_from_yaml
+            from crawler.interfaces import INewsSource, SourceType, ContentType
+            from crawler.extensions.html_extensions import register_html_extensions
+            
         except ImportError:
             # Some modules might not be fully implemented yet
             pass
@@ -105,7 +109,7 @@ class TestProjectSpecificSetup:
     def test_can_import_monitoring_modules(self):
         """Test that we can import monitoring modules."""
         # Test basic module imports
-        monitoring_modules = ['metrics', 'health_check', 'duplicate_detector', 'app_insights']
+        monitoring_modules = ['metrics', 'health_check', 'duplicate_detector', 'app_insights', 'alerts']
         
         for module_name in monitoring_modules:
             try:
@@ -128,10 +132,10 @@ class TestProjectSpecificSetup:
     def test_config_loading(self):
         """Test that configuration loading works."""
         try:
-            from crawler.utils.config_loader import load_sources_config
+            from crawler.factories import load_sources_from_yaml
             
             # This should handle missing config gracefully
-            config = load_sources_config("non_existent_config.yaml")
+            config = load_sources_from_yaml("non_existent_config.yaml")
             # Should return empty list or None, not crash
             assert config is None or isinstance(config, list)
             
@@ -139,7 +143,7 @@ class TestProjectSpecificSetup:
             pytest.skip("Config loader not yet implemented")
         except Exception as e:
             # Should not crash on missing config
-            assert "not found" in str(e).lower() or "no such file" in str(e).lower()
+            assert "not found" in str(e).lower() or "no such file" in str(e).lower() or "does not exist" in str(e).lower()
 
 
 class TestSimpleIntegration:
@@ -149,11 +153,11 @@ class TestSimpleIntegration:
     def test_metrics_and_duplicate_detector_integration(self):
         """Test that metrics and duplicate detector can work together."""
         try:
-            from monitoring.metrics import Metrics  
-            from monitoring.duplicate_detector import DuplicateDetector
+            from monitoring.metrics import get_metrics  
+            from monitoring.duplicate_detector import get_duplicate_detector
             
-            metrics = Metrics()
-            detector = DuplicateDetector()
+            metrics = get_metrics()
+            detector = get_duplicate_detector()
             
             # Test basic functionality
             cycle_id = metrics.start_cycle()
@@ -165,14 +169,20 @@ class TestSimpleIntegration:
                 'content': 'Test content'
             }
             
+            # Check if duplicate (first time should be False)
             is_dup, reason = detector.is_duplicate(test_article)
             assert is_dup is False
             
-            detector.add_article(test_article)
-            metrics.end_cycle(cycle_id, success=True)
+            # Check again - should now be True (duplicate)
+            is_dup_second, reason_second = detector.is_duplicate(test_article)
+            assert is_dup_second is True
+            assert reason_second == "url"
             
-            stats = metrics.get_cycle_stats()
-            assert stats['total_cycles'] >= 1
+            metrics.end_cycle(success=True)
+            
+            # Verify metrics were collected
+            current_metrics = metrics.get_current_metrics()
+            assert current_metrics is not None
             
         except ImportError:
             pytest.skip("Required modules not available")

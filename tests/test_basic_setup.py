@@ -51,7 +51,7 @@ class TestBasicSetup:
         
         # Try to import it (might have import errors, but file should be readable)
         try:
-            with open(main_file, 'r') as f:
+            with open(main_file, 'r', encoding='utf-8') as f:
                 content = f.read()
                 assert len(content) > 0, "main.py should have content"
                 assert 'def' in content or 'import' in content, "main.py should have Python code"

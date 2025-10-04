@@ -1,0 +1,2 @@
+Enhanced crawler started at: 2025-10-04T00:46:04.696778
+Sources loaded: ['babypips', 'fxstreet', 'marketwatch', 'kabutan', 'foxnews', 'foxbusiness', 'nbcnews', 'nbcbusiness', 'forexfactory', 'bloomberg_markets']

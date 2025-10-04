@@ -37,6 +37,9 @@ class VectorClient:
         retry_delay_base = 2  # seconds
         
         for attempt in range(max_retries):
+            # Calculate retry delay OUTSIDE try block to avoid scope issues
+            retry_delay = retry_delay_base ** attempt if attempt > 0 else 0
+            
             try:
                 if not text_content or len(text_content.strip()) < 50:
                     logger.warning(f"Text content too short or empty: {len(text_content if text_content else '')} chars")
@@ -45,10 +48,9 @@ class VectorClient:
                         "message": "Text content too short or empty"
                     }
                 
-                # Calculate current retry delay with exponential backoff
-                retry_delay = retry_delay_base ** attempt if attempt > 0 else 0
                 if attempt > 0:
                     logger.info(f"Retry attempt {attempt}/{max_retries} after {retry_delay}s delay")
+                    await asyncio.sleep(retry_delay)
                     
                 logger.info(f"Adding document to Qdrant (content length: {len(text_content)} chars)")
                 result = await self.client.add_document(text_content, metadata)

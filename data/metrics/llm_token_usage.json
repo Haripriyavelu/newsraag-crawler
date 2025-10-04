@@ -1,0 +1,35 @@
+{
+  "daily_tokens": 114190,
+  "monthly_tokens": 377591,
+  "total_tokens": 377591,
+  "daily_date": "2025-10-04",
+  "monthly_date": "2025-10",
+  "request_count": 185,
+  "last_updated": "2025-10-04T00:48:44.571905",
+  "models": {
+    "gpt-4.1-stocks": {
+      "tokens": 376891,
+      "requests": 178,
+      "types": {
+        "content_cleaning": {
+          "tokens": 376660,
+          "requests": 171
+        },
+        "health_check": {
+          "tokens": 231,
+          "requests": 7
+        }
+      }
+    },
+    "gpt-4": {
+      "tokens": 700,
+      "requests": 7,
+      "types": {
+        "test": {
+          "tokens": 700,
+          "requests": 7
+        }
+      }
+    }
+  }
+}

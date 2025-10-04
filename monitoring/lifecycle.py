@@ -13,7 +13,7 @@ import pytz
 
 # Import our modules
 from clients.vector_client import VectorClient
-from utils.azure_utils import (
+from crawler.utils.azure_utils import (
     check_azure_connection, 
     list_blobs_by_date_prefix,
     _get_azure_credentials,

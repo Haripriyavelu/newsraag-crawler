@@ -36,17 +36,18 @@ class TestCrawlerIntegration:
         }
         
         # This should not crash, even if it fails to get data
+        from crawler.core.source_crawler import crawl_source
         result = await crawl_source(config)
         
         assert result is not None
         assert isinstance(result, tuple)
-        assert len(result) >= 2
+        assert len(result) == 3  # Should return exactly 3 values
         
-        source_name, processed_count, failed_count = result
-        assert source_name == 'integration_test_source'
+        processed_count, failed_count, skipped_count = result
         # Should handle the 404 gracefully
         assert isinstance(processed_count, int)
         assert isinstance(failed_count, int)
+        assert isinstance(skipped_count, int)
     
     @pytest.mark.integration
     @pytest.mark.asyncio 
@@ -183,9 +184,13 @@ class TestConfigurationIntegration:
             result = await crawl_source(source)
             assert result is not None
             assert isinstance(result, tuple)
+            assert len(result) == 3  # Should return exactly 3 values
             
-            source_name, processed_count, failed_count = result
-            assert source_name == source['name']
+            processed_count, failed_count, skipped_count = result  # Updated to expect 3 values
+            # Basic validation of return values
+            assert processed_count >= 0
+            assert failed_count >= 0  
+            assert skipped_count >= 0
 
 
 class TestFileSystemIntegration:

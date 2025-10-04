@@ -96,16 +96,8 @@ class TestRSSFeedIntegration:
             mock_get.return_value = mock_response
             
             # Test RSS crawling with proper arguments
-            try:
-                # Try different possible signatures
-                result = await crawl_rss_feed("test_source", "https://example.com/test-feed.xml")
-            except TypeError:
-                try:
-                    # Alternative signature
-                    result = await crawl_rss_feed("https://example.com/test-feed.xml", "test_source")
-                except TypeError:
-                    # Skip if we can't figure out the signature
-                    pytest.skip("Could not determine crawl_rss_feed signature")
+            # The function signature is: crawl_rss_feed(rss_url: str, max_articles: int = 50)
+            result = await crawl_rss_feed("https://example.com/test-feed.xml", 10)
             
             assert result is not None
             assert isinstance(result, list)
@@ -327,10 +319,10 @@ class TestEndToEndIntegration:
         
         # Verify results
         assert result is not None
-        source_name, processed, failed = result
-        assert source_name == 'end_to_end_test'
+        processed, failed, skipped = result  # Updated to expect 3 values
         assert isinstance(processed, int)
         assert isinstance(failed, int)
+        assert isinstance(skipped, int)
         
         # Get final metrics state
         final_metrics = get_metrics()

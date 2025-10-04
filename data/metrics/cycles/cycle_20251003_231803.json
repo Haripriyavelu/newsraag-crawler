@@ -1,0 +1,14 @@
+{
+  "cycle_id": "cycle_20251003_231803",
+  "start_time": "2025-10-03T23:18:03.727741",
+  "status": "completed",
+  "articles_discovered": 0,
+  "articles_processed": 0,
+  "articles_failed": 0,
+  "duplicates_detected": 0,
+  "sources": {},
+  "errors": [],
+  "duration_seconds": 0.0,
+  "end_time": "2025-10-03T23:18:03.728686",
+  "success_rate": 100
+}

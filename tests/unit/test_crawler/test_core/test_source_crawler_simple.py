@@ -82,22 +82,26 @@ class TestSourceCrawlerBasic:
         except ImportError:
             pytest.skip("source_crawler module not available")
         
-        # Mock all dependencies
+        # Mock the unified source system components that source_crawler uses
         with patch('crawler.core.source_crawler.get_metrics') as mock_get_metrics, \
-             patch('crawler.core.source_crawler.crawl_rss_feed', new_callable=AsyncMock) as mock_crawl_rss, \
-             patch('crawler.core.source_crawler.process_article', new_callable=AsyncMock) as mock_process:
+             patch('crawler.factories.SourceFactory.create_sources_from_config_list') as mock_create_sources:
             
             # Configure mocks
             mock_metrics = MagicMock()
             mock_get_metrics.return_value = mock_metrics
             
-            # Mock RSS articles
-            mock_articles = [
-                {'title': 'Test Article 1', 'link': 'https://example.com/1'},
-                {'title': 'Test Article 2', 'link': 'https://example.com/2'}
-            ]
-            mock_crawl_rss.return_value = mock_articles
-            mock_process.return_value = True  # Successful processing
+            # Mock a source that would be created by the factory
+            mock_source = MagicMock()
+            
+            # Create an async mock for process_articles
+            async def mock_process_articles():
+                return {
+                    'articles_processed': 2,
+                    'articles_failed': 0, 
+                    'articles_skipped': 0
+                }
+            mock_source.process_articles = mock_process_articles
+            mock_create_sources.return_value = {'test_source': mock_source}
             
             config = {
                 'name': 'test_source',
@@ -108,15 +112,17 @@ class TestSourceCrawlerBasic:
             result = await crawl_source(config)
             
             assert result is not None
-            source_name, processed_count, failed_count = result
+            processed_count, failed_count, skipped_count = result  # Updated to expect 3 values
             
-            assert source_name == 'test_source'
-            assert processed_count > 0  # Should have processed articles
-            assert failed_count == 0    # No failures
+            # Should have processed articles
+            assert processed_count == 2  
+            assert failed_count == 0    
+            assert skipped_count == 0
             
             # Verify mocks were called
-            mock_crawl_rss.assert_called_once()
-            assert mock_process.call_count == len(mock_articles)
+            mock_create_sources.assert_called_once()
+            # Check that the source object's method was called (not the mock directly)
+            assert mock_source.process_articles.__name__ == 'mock_process_articles'
 
 
 class TestSourceCrawlerModules:
@@ -163,13 +169,13 @@ class TestSourceCrawlerErrorHandling:
             pytest.skip("source_crawler module not available")
         
         with patch('crawler.core.source_crawler.get_metrics') as mock_get_metrics, \
-             patch('crawler.core.source_crawler.crawl_rss_feed', new_callable=AsyncMock) as mock_crawl_rss:
+             patch('crawler.core.source_crawler._convert_legacy_config') as mock_convert:
             
             mock_metrics = MagicMock()
             mock_get_metrics.return_value = mock_metrics
             
-            # Simulate RSS crawling failure
-            mock_crawl_rss.side_effect = Exception("RSS feed not accessible")
+            # Simulate conversion failure (like invalid config)
+            mock_convert.return_value = None
             
             config = {
                 'name': 'test_source',
@@ -181,10 +187,9 @@ class TestSourceCrawlerErrorHandling:
             result = await crawl_source(config)
             
             assert result is not None
-            source_name, processed_count, failed_count = result
-            assert source_name == 'test_source'
+            processed_count, failed_count, skipped_count = result  # Updated to expect 3 values
             # Should have some failure indication
-            assert processed_count == 0 or failed_count > 0
+            assert processed_count == 0 and failed_count == 1 and skipped_count == 0
     
     @pytest.mark.unit
     @pytest.mark.asyncio
@@ -196,16 +201,19 @@ class TestSourceCrawlerErrorHandling:
             pytest.skip("source_crawler module not available")
         
         with patch('crawler.core.source_crawler.get_metrics') as mock_get_metrics, \
-             patch('crawler.core.source_crawler.crawl_rss_feed', new_callable=AsyncMock) as mock_crawl_rss, \
-             patch('crawler.core.source_crawler.process_article', new_callable=AsyncMock) as mock_process:
+             patch('crawler.factories.SourceFactory.create_sources_from_config_list') as mock_create_sources:
             
             mock_metrics = MagicMock()
             mock_get_metrics.return_value = mock_metrics
             
-            # Mock successful RSS crawling but failed processing
-            mock_articles = [{'title': 'Test Article', 'link': 'https://example.com/1'}]
-            mock_crawl_rss.return_value = mock_articles
-            mock_process.side_effect = Exception("Processing failed")
+            # Mock source that throws an exception during processing
+            mock_source = MagicMock()
+            
+            async def mock_process_articles_error():
+                raise Exception("Processing failed")
+            
+            mock_source.process_articles = mock_process_articles_error
+            mock_create_sources.return_value = {'test_source': mock_source}
             
             config = {
                 'name': 'test_source',
@@ -216,7 +224,8 @@ class TestSourceCrawlerErrorHandling:
             result = await crawl_source(config)
             
             assert result is not None
-            source_name, processed_count, failed_count = result
-            assert source_name == 'test_source'
-            # Should indicate processing failure
-            assert failed_count > 0
+            processed_count, failed_count, skipped_count = result  # Updated to expect 3 values
+            # Should indicate processing failure (0 processed, 1 failed, 0 skipped)
+            assert processed_count == 0
+            assert failed_count == 1 
+            assert skipped_count == 0

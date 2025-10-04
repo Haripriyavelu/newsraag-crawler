@@ -1,20 +1,148 @@
 sources:
+  # ===== EXISTING SOURCES - Enhanced with Universal Timeout Fix =====
+  
   - name: babypips
-    type: rss # Indicates the type of source/crawler needed
+    type: rss
     url: https://www.babypips.com/feed.rss
-    # Add other potential parameters specific to this source/type later
-    # e.g., css_selector: ".full-post" 
+    rate_limit: 2
+    max_articles: 40
+    timeout: 90
+    content_type: forex
+    
   - name: fxstreet
     type: rss
     url: https://www.fxstreet.com/rss/news
-  - name: forexlive
+    rate_limit: 5  # Increased from 2 due to browser issues
+    max_articles: 10  # Reduced from 30 to prevent browser overload
+    timeout: 180  # Increased from 120 for heavy pages
+    content_type: forex
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    
+  - name: marketwatch
     type: rss
-    url: https://www.forexlive.com/feed/
-# Add Kabutan and PoundSterlingLive later when implemented
+    url: https://feeds.marketwatch.com/marketwatch/topstories/
+    rate_limit: 2
+    max_articles: 35
+    timeout: 90
+    content_type: forex
+
   - name: kabutan
-    type: html
+    type: html_scraping
     url: https://kabutan.jp/news/marketnews/
-    translate: true # Optional: defaults to true in crawler
-#  - name: poundsterlinglive
-#    type: html
-#    url: https://www.poundsterlinglive.com/markets 
+    selectors:
+      title: ".news-title, .ttl, h2, h3"
+      content: ".news-content, .article-body, .lead"  
+      link: "a[href*='/news/']"
+      date: ".date, .time, .published"
+    translate: true
+    rate_limit: 3
+    max_articles: 25
+    timeout: 150
+    content_type: stocks
+
+  # ===== NEW MAJOR NEWS SOURCES =====
+
+  # Fox News - Major US news network
+  - name: foxnews
+    type: rss
+    url: https://moxie.foxnews.com/google-publisher/latest.xml
+    rate_limit: 2
+    max_articles: 30
+    timeout: 90
+    content_type: news
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+  # Fox Business - Financial focus
+  - name: foxbusiness
+    type: rss
+    url: https://moxie.foxbusiness.com/google-publisher/latest.xml
+    rate_limit: 2
+    max_articles: 25
+    timeout: 90
+    content_type: economics
+
+  # NBC News - Major US news network
+  - name: nbcnews
+    type: rss
+    url: https://feeds.nbcnews.com/nbcnews/public/news
+    rate_limit: 2
+    max_articles: 30
+    timeout: 90
+    content_type: news
+
+  # NBC Business
+  - name: nbcbusiness
+    type: rss
+    url: https://feeds.nbcnews.com/nbcnews/public/business
+    rate_limit: 2
+    max_articles: 25
+    timeout: 90
+    content_type: economics
+
+  # # USA TODAY - Major US news
+  # - name: usatoday
+  #   type: rss
+  #   url: https://rssfeeds.usatoday.com/usatoday-NewsTopStories
+  #   rate_limit: 2
+  #   max_articles: 30
+  #   timeout: 90
+  #   content_type: news
+
+  # # USA TODAY Money - Financial focus
+  # - name: usatoday_money
+  #   type: rss
+  #   url: https://rssfeeds.usatoday.com/usatoday-money
+  #   rate_limit: 2
+  #   max_articles: 25
+  #   timeout: 90
+  #   content_type: economics
+
+  # # CNBC - Premium financial news (may have anti-bot protection)
+  # - name: cnbc
+  #   type: rss
+  #   url: https://www.cnbc.com/id/100003114/device/rss/rss.html
+  #   rate_limit: 3  # More respectful for premium site
+  #   max_articles: 20  # Limited due to high-value content
+  #   timeout: 120  # Longer timeout for heavy financial site
+  #   content_type: economics
+  #   headers:
+  #     User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+  # # CNBC World Markets
+  # - name: cnbc_world
+  #   type: rss
+  #   url: https://www.cnbc.com/id/100727362/device/rss/rss.html
+  #   rate_limit: 3
+  #   max_articles: 20
+  #   timeout: 120
+  #   content_type: economics
+
+  # ===== SPECIALIZED FINANCIAL SOURCES =====
+
+  # Forex Factory - Economic calendar + news (High-priority for forex traders)
+  - name: forexfactory
+    type: html_scraping  # May not have RSS, use HTML scraping
+    url: https://www.forexfactory.com/news
+    rate_limit: 4  # Very respectful - important trading site
+    max_articles: 15  # Quality over quantity
+    timeout: 150  # Longer for complex site
+    content_type: forex
+    selectors:
+      title: ".news__title, .calendar__event-title"
+      content: ".news__text, .calendar__event-description"
+      link: "a[href*='/news/']"
+      date: ".news__date, .calendar__event-time"
+
+  # Bloomberg Markets (if accessible)
+  - name: bloomberg_markets
+    type: rss
+    url: https://feeds.bloomberg.com/markets/news.rss
+    rate_limit: 5  # Very respectful - premium content
+    max_articles: 10  # Limited due to potential paywall
+    timeout: 180  # Long timeout for heavy site
+    content_type: economics
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"

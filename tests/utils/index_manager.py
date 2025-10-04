@@ -7,7 +7,7 @@ from loguru import logger
 
 from clients.vector_client import VectorClient
 # Import Azure utils
-from utils.azure_utils import download_json_from_azure, construct_blob_path
+from crawler.utils.azure_utils import download_json_from_azure, construct_blob_path
 
 async def cleanup_old_documents(hours_threshold: int = 24):
     """Removes documents older than the specified threshold from the Qdrant index.

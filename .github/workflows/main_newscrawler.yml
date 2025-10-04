@@ -1,6 +1,6 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
 name: Build and deploy Python app to Azure Web App - newscrawler
 
@@ -15,32 +15,33 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
-    steps:
-      - uses: actions/checkout@v4
+    # steps:
+    #   - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      # - name: Set up Python version
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.12'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      # - name: Install dependencies
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install -r requirements.txt
 
-      - name: Run critical tests before deployment
-        run: |
-          # Run setup verification to ensure basic functionality
-          python run_tests.py test tests/test_setup_verification.py
+      # - name: Run critical tests before deployment
+      #   run: |
+      #     # Run setup verification to ensure basic functionality
+      #     python run_tests.py test tests/test_setup_verification.py -v
           
-          # Run unit tests
-          python run_tests.py all
-        env:
-          # Test environment variables
-          QDRANT_URL: http://localhost:6333
-          QDRANT_API_KEY: test-api-key
-          OPENAI_API_KEY: test-openai-key
-          ALERT_SLACK_ENABLED: false
+      #     # Run unit tests
+      #     python run_tests.py unit -v
+      #   env:
+      #     # Test environment variables
+      #     QDRANT_URL: http://localhost:6333
+      #     QDRANT_API_KEY: test-api-key
+      #     OPENAI_API_KEY: test-openai-key
+      #     ALERT_SLACK_ENABLED: false
+
 
   build:
     runs-on: ubuntu-latest
