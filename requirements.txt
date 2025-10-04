@@ -1,85 +1,46 @@
-# Crawler-only requirements (lightweight)
-# RSS parsing and data processing
-
-# Core dependencies
+# Phase 1: Core lightweight dependencies (install first)
 python-dotenv>=1.0.0
 loguru
-
-# RSS parsing for discoveries
-feedparser>=6.0.0
-
-# Browser-based content extraction
-crawl4ai>=0.7.0
-playwright>=1.40.0
-
-# HTTP and parsing
+pyyaml>=6.0.2
 requests>=2.31.0
+pytz>=2024.0
+pydantic>=2.11.0
+packaging>=23.0
+setuptools>=65.0.0
+
+# Phase 2: Essential Azure and async
+azure-core>=1.29.0
+applicationinsights>=0.11.8
+aiohttp>=3.10.5
+
+# Phase 3: RSS and parsing (lightweight)
+feedparser>=6.0.0
 beautifulsoup4>=4.13.0
 lxml>=5.3.0
 
-# Configuration and utilities
-pyyaml>=6.0.2
-
-# Database and storage
+# Phase 4: Heavy dependencies (install after health checks pass)
+# Uncomment gradually in deployment
+crawl4ai>=0.7.0
+playwright>=1.40.0
 qdrant-client>=1.9.0
-redis>=5.0.0
-azure-storage-blob>=12.25.0
-
-# Scientific computing (required by qdrant-client)
 numpy>=1.24.0
-
-# Date and time
-pytz>=2024.0
-
-# JSON and data handling
-pydantic>=2.11.0
-packaging>=23.0
-setuptools>=65.0.0  # For pkg_resources
-
-# Azure OpenAI for embeddings
 openai>=1.0.0
-azure-core>=1.29.0
-
-# Additional Azure dependencies
+azure-storage-blob>=12.25.0
+redis>=5.0.0
 azure-identity>=1.15.0
 
-# Async support
-aiohttp>=3.10.5
-pyyaml
-
-applicationinsights>=0.11.8
-
-
-
-# Testing dependencies for NewsRaag Crawler
-
-# Core testing framework
+# Testing dependencies (development only - comment out for production)
 pytest>=7.4.0
-pytest-asyncio>=0.21.0  # For async function testing
-pytest-mock>=3.11.0     # For mocking dependencies
-pytest-cov>=4.1.0       # For code coverage reporting
-
-# HTTP mocking
-responses>=0.23.0        # Mock HTTP requests
-httpx>=0.24.0           # Modern HTTP client for testing
-
-# Redis mocking
-fakeredis>=2.18.0       # Mock Redis for testing
-
-# Time mocking
-freezegun>=1.2.0        # Mock time for testing
-
-# Test data generation
-factory-boy>=3.3.0      # Generate test data
-Faker>=19.0.0           # Generate fake data
-
-# Performance testing
-pytest-benchmark>=4.0.0 # Benchmark testing
-
-# Test reporting
-pytest-html>=3.2.0     # HTML test reports
-pytest-json-report>=1.5.0  # JSON test reports
-
-# Additional utilities
-parameterized>=0.9.0    # Parameterized tests
-testcontainers>=3.7.0   # For integration testing with containers (optional)
+pytest-asyncio>=0.21.0
+pytest-mock>=3.11.0
+pytest-cov>=4.1.0
+responses>=0.23.0
+httpx>=0.24.0
+fakeredis>=2.18.0
+freezegun>=1.2.0
+factory-boy>=3.3.0
+Faker>=19.0.0
+pytest-benchmark>=4.0.0
+pytest-html>=3.2.0
+pytest-json-report>=1.5.0
+parameterized>=0.9.0
